@@ -36,6 +36,20 @@ const SwitchQuestionIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ 
     </button>
 );
 
+const MuteIcon: React.FC<{ isMuted: boolean; onClick: () => void; }> = ({ isMuted, onClick }) => (
+  <button onClick={onClick} className="text-gray-500 hover:text-white transition-colors duration-300" aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}>
+    {isMuted ? (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+      </svg>
+    ) : (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+      </svg>
+    )}
+  </button>
+);
 
 const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
   <div className="w-full lg:w-64 xl:w-80 bg-black bg-opacity-50 p-2 rounded-lg border-2 border-blue-900">
@@ -49,25 +63,19 @@ const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
         if (isAchieved) {
             levelClass = "text-green-400 opacity-70";
         }
-        // Safe levels have a distinct style
         if (isSafe) {
             levelClass = "text-yellow-300 font-semibold";
         }
-        // Achieved safe levels keep their distinct style
         if (isAchieved && isSafe) {
             levelClass = "text-yellow-300 font-semibold opacity-80";
         }
-        // The current level is the most prominent
         if (isCurrent) {
-            // Responsive padding and font-size for the current level
             levelClass = "bg-yellow-600 text-white font-bold scale-105 text-sm md:text-base p-1 md:p-2";
         }
-
 
         return (
           <li
             key={amount}
-            // Responsive base classes for padding, margin, and font-size to ensure it fits on smaller screens
             className={`px-2 py-0.5 my-0.5 rounded-md transition-all duration-300 text-xs sm:text-sm ${levelClass}`}
           >
             <span className="mr-2 text-yellow-400">{PRIZE_AMOUNTS.length - index}</span> {amount}
@@ -125,6 +133,13 @@ export default function App() {
   
   const [questionOpacity, setQuestionOpacity] = useState(1);
   const [questionTransform, setQuestionTransform] = useState('translateY(0)');
+  
+  const [isMuted, setIsMuted] = useState(false);
+  const [currentMusic, setCurrentMusic] = useState<string | null>(null);
+  const audioRefs = useRef<{
+    music: { [key: string]: HTMLAudioElement };
+    sfx: { [key: string]: HTMLAudioElement };
+  }>({ music: {}, sfx: {} });
 
   const revealTimeoutRef = useRef<number | null>(null);
   const nextQuestionTimeoutRef = useRef<number | null>(null);
@@ -150,6 +165,75 @@ export default function App() {
       console.error("Failed to load initial data:", error);
     }
   }, []);
+  
+  useEffect(() => {
+    audioRefs.current = {
+      music: {
+        play: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/pyramid-climb.mp3'),
+        suspense: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/wait.mp3'),
+      },
+      sfx: {
+        correct: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/correct.mp3'),
+        wrong: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/error.mp3'),
+        win: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/winner.mp3'),
+        lifeline: new Audio('https://cdn.jsdelivr.net/gh/nagl/millionaires@master/src/sounds/sound-50-50.mp3'),
+      }
+    };
+
+    (Object.values(audioRefs.current.music) as HTMLAudioElement[]).forEach(audio => {
+        audio.preload = 'auto';
+        audio.loop = true;
+    });
+    (Object.values(audioRefs.current.sfx) as HTMLAudioElement[]).forEach(audio => {
+        audio.preload = 'auto';
+    });
+
+    return () => {
+        (Object.values(audioRefs.current.music) as HTMLAudioElement[]).forEach(audio => {
+            audio.pause();
+            audio.src = '';
+        });
+         (Object.values(audioRefs.current.sfx) as HTMLAudioElement[]).forEach(audio => {
+            audio.src = '';
+        });
+    };
+  }, []);
+
+  const playSfx = useCallback((sound: string) => {
+    if (isMuted) return;
+    const audio = audioRefs.current.sfx[sound];
+    if (audio) {
+      const sfxInstance = audio.cloneNode() as HTMLAudioElement;
+      sfxInstance.volume = 0.7;
+      sfxInstance.play().catch(e => console.warn(`SFX play failed for ${sound}:`, e));
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    const volumes: { [key: string]: number } = {
+      play: 0.2,
+      suspense: 1.0,
+    };
+    (Object.values(audioRefs.current.music) as HTMLAudioElement[]).forEach(audio => audio.pause());
+    if (currentMusic && !isMuted) {
+      const audio = audioRefs.current.music[currentMusic];
+      if (audio) {
+        audio.currentTime = 0;
+        audio.volume = volumes[currentMusic] || 0.4;
+        audio.play().catch(e => console.warn(`Music play failed for ${currentMusic}:`, e));
+      }
+    }
+  }, [currentMusic, isMuted]);
+
+  useEffect(() => {
+    switch(gameStatus) {
+        case GameStatus.Welcome:
+        case GameStatus.Loading:
+        case GameStatus.GameOver:
+            setCurrentMusic(null);
+            break;
+    }
+  }, [gameStatus]);
 
   const clearAllTimeouts = useCallback(() => {
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
@@ -173,14 +257,16 @@ export default function App() {
     
     const allSessionQuestions = await getSessionQuestions(allQuestions);
     setQuestions(allSessionQuestions);
+    setCurrentMusic('play');
     setGameStatus(GameStatus.Playing);
   }, [clearAllTimeouts, allQuestions]);
 
   const goToNextQuestion = useCallback(() => {
     clearAllTimeouts();
     if (currentQuestionIndex < questions.length - 1) {
+        setCurrentMusic('play');
         setQuestionOpacity(0);
-        setQuestionTransform('translateY(-20px)'); // Move up on exit
+        setQuestionTransform('translateY(-20px)');
         
         nextQuestionTimeoutRef.current = window.setTimeout(() => {
             isAnswerProcessing.current = false;
@@ -190,7 +276,7 @@ export default function App() {
             setPhoneFriendSuggestion(null);
             setIsSuspensePhase(false);
             setGameStatus(GameStatus.Playing);
-        }, 400); // Animation duration
+        }, 400);
     } else {
         setGameStatus(GameStatus.GameOver);
     }
@@ -199,13 +285,11 @@ export default function App() {
   useEffect(() => {
     const currentQuestion = questions[currentQuestionIndex];
     if (currentQuestion?.answers) {
-        setQuestionTransform('translateY(20px)'); // Prepare for entry: move down
-        
+        setQuestionTransform('translateY(20px)');
         requestAnimationFrame(() => {
-            setQuestionOpacity(1); // Fade in
-            setQuestionTransform('translateY(0)'); // Move to final position
+            setQuestionOpacity(1);
+            setQuestionTransform('translateY(0)');
         });
-
         const shuffled = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
         setShuffledAnswers(shuffled);
     }
@@ -213,16 +297,17 @@ export default function App() {
 
   const revealAnswer = useCallback(() => {
     clearAllTimeouts();
-    setIsSuspensePhase(false); // This triggers rendering of correct/incorrect states
+    setCurrentMusic(null);
+    setIsSuspensePhase(false);
 
     const currentQ = questions[currentQuestionIndex];
-    if (!currentQ) return; // Safety check
+    if (!currentQ) return;
 
     const isCorrect = selectedAnswer === currentQ.correctAnswer;
 
     if (isCorrect) {
+      playSfx('correct');
       if (currentQuestionIndex >= questions.length - 1) {
-        // Correctly answered the last question - WINNER!
         setWinCount(prevWins => {
             const newWinCount = prevWins + 1;
             try {
@@ -233,40 +318,35 @@ export default function App() {
             return newWinCount;
         });
         
-        // Show the correct answer for 3s, then go to the GameOver screen.
+        setTimeout(() => playSfx('win'), 1000);
         nextQuestionTimeoutRef.current = window.setTimeout(() => {
             setGameStatus(GameStatus.GameOver);
-        }, 3000);
+        }, 4000);
       } else {
-        // Correct answer, move to next.
-        // Show correct answer for 2s, then load next question.
         nextQuestionTimeoutRef.current = window.setTimeout(goToNextQuestion, 2000);
       }
     } else {
-      // Incorrect answer.
-      // Show the incorrect and correct answers for 3s, then go to GameOver screen.
+      playSfx('wrong');
       nextQuestionTimeoutRef.current = window.setTimeout(() => {
         setGameStatus(GameStatus.GameOver);
       }, 3000);
     }
-  }, [selectedAnswer, questions, currentQuestionIndex, goToNextQuestion, clearAllTimeouts]);
-
+  }, [selectedAnswer, questions, currentQuestionIndex, goToNextQuestion, clearAllTimeouts, playSfx]);
 
   const handleAnswerSelect = useCallback((answer: string) => {
     if (gameStatus !== GameStatus.Playing || isAnswerProcessing.current) return;
     
     isAnswerProcessing.current = true;
+    setCurrentMusic('suspense');
     clearAllTimeouts();
     setGameStatus(GameStatus.AnswerSelected);
     setSelectedAnswer(answer);
     setIsSuspensePhase(true);
   }, [gameStatus, clearAllTimeouts]);
 
-  // Effect to automatically reveal the answer after a delay
   useEffect(() => {
     if (gameStatus === GameStatus.AnswerSelected && isSuspensePhase) {
-        revealTimeoutRef.current = window.setTimeout(revealAnswer, 1500); // Shortened from 3000ms
-
+        revealTimeoutRef.current = window.setTimeout(revealAnswer, 3000);
         return () => {
             if (revealTimeoutRef.current) {
                 clearTimeout(revealTimeoutRef.current);
@@ -275,13 +355,9 @@ export default function App() {
     }
   }, [gameStatus, isSuspensePhase, revealAnswer]);
 
-  // Effect to manage the timer interval
   useEffect(() => {
-    // The timer should only run when the status is Playing and the feature is enabled.
     if (gameStatus !== GameStatus.Playing || !isTimerEnabled) {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      
-      // If the timer is simply disabled (not just paused), hide it completely.
       if (!isTimerEnabled) {
           setTimeLeft(null);
       }
@@ -303,7 +379,6 @@ export default function App() {
     };
   }, [gameStatus, currentQuestionIndex, isTimerEnabled, questions]);
 
-  // Effect to handle timer expiration
   useEffect(() => {
     if (timeLeft === 0 && gameStatus === GameStatus.Playing && !isAnswerProcessing.current) {
       handleAnswerSelect("TIMER_EXPIRED");
@@ -311,7 +386,6 @@ export default function App() {
   }, [timeLeft, gameStatus, handleAnswerSelect]);
   
   useEffect(() => {
-      // Cleanup on unmount
       return () => {
         clearAllTimeouts();
         if (resetConfirmTimeoutRef.current) clearTimeout(resetConfirmTimeoutRef.current);
@@ -334,6 +408,7 @@ export default function App() {
 
   const useFiftyFifty = () => {
     if (fiftyFiftyUsed || gameStatus !== GameStatus.Playing) return;
+    playSfx('lifeline');
     setFiftyFiftyUsed(true);
     const currentQ = questions[currentQuestionIndex];
     const incorrectAnswers = currentQ.answers.filter(a => a !== currentQ.correctAnswer);
@@ -350,11 +425,12 @@ export default function App() {
 
   const usePhoneFriend = () => {
       if (phoneFriendUsed || gameStatus !== GameStatus.Playing) return;
+      playSfx('lifeline');
       setPhoneFriendUsed(true);
       const currentQ = questions[currentQuestionIndex];
       const { correctAnswer, answers } = currentQ;
 
-      const isCorrectSuggestion = Math.random() < 0.85; // 85% chance of being correct
+      const isCorrectSuggestion = Math.random() < 0.85;
       if (isCorrectSuggestion) {
           setPhoneFriendSuggestion(correctAnswer);
       } else {
@@ -366,6 +442,7 @@ export default function App() {
 
   const useSwitchQuestion = () => {
       if (switchQuestionUsed || gameStatus !== GameStatus.Playing) return;
+      playSfx('lifeline');
       setSwitchQuestionUsed(true);
 
       const currentQ = questions[currentQuestionIndex];
@@ -384,7 +461,6 @@ export default function App() {
           setHiddenAnswers([]);
           setPhoneFriendSuggestion(null); 
       } else {
-          // This can be replaced with a user-facing message if desired
           console.warn("No replacement questions available for this difficulty.");
       }
   };
@@ -393,7 +469,7 @@ export default function App() {
     setIsResetConfirming(true);
     resetConfirmTimeoutRef.current = window.setTimeout(() => {
       setIsResetConfirming(false);
-    }, 4000); // 4 seconds to confirm
+    }, 4000);
   };
 
   const handleConfirmReset = () => {
@@ -436,28 +512,22 @@ export default function App() {
 
     const isCorrect = selectedAnswer === currentQ.correctAnswer;
 
-    // Case 1: Won the whole game
     if (isCorrect && currentQuestionIndex >= questions.length - 1) {
-        return PRIZE_AMOUNTS[0]; // €1.000.000
+        return PRIZE_AMOUNTS[0];
     }
     
-    // Case 2: Answered correctly (but not the last question, handled by game flow)
     if (isCorrect) {
         return PRIZE_AMOUNTS[prizeLevel];
     }
     
-    // Case 3: Answered incorrectly
     const lastCorrectQuestionIndex = currentQuestionIndex - 1;
 
-    // If they got the very first question wrong
     if (lastCorrectQuestionIndex < 0) {
         return '€0';
     }
     
-    // prizeLevel index of the last correctly answered question
     const lastWonPrizeLevel = PRIZE_AMOUNTS.length - 1 - lastCorrectQuestionIndex;
 
-    // Find the highest safe point reached. A lower index means a higher prize.
     const highestSafeLevelReached = SAFE_LEVELS.find(safeIdx => lastWonPrizeLevel <= safeIdx);
 
     if (highestSafeLevelReached !== undefined) {
@@ -496,7 +566,8 @@ export default function App() {
                   <span className="font-bold text-3xl tracking-wider">{winCount}</span>
               </div>
             </div>
-            <div className="fixed bottom-8 right-8">
+            <div className="fixed bottom-8 right-8 flex gap-4">
+               <MuteIcon isMuted={isMuted} onClick={() => setIsMuted(prev => !prev)} />
               <button onClick={() => setIsSettingsOpen(true)} className="text-gray-500 hover:text-white transition-colors duration-300" aria-label="Impostazioni">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
