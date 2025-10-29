@@ -12,15 +12,15 @@ import TrophyIcon from './components/TrophyIcon';
 const WIN_COUNT_STORAGE_KEY = 'millionaireWinCount';
 
 const FiftyFiftyIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ used, onClick }) => (
-  <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-lg border-2 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
+  <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-base md:text-lg border-2 rounded-full w-20 h-20 md:w-28 md:h-28 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
     50:50
     {used && <div className="absolute inset-0 flex items-center justify-center text-red-400 text-5xl font-black">X</div>}
   </button>
 );
 
 const PhoneFriendIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ used, onClick }) => (
-    <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-lg border-2 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-lg border-2 rounded-full w-20 h-20 md:w-28 md:h-28 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
       {used && <div className="absolute inset-0 flex items-center justify-center text-red-400 text-5xl font-black">X</div>}
@@ -28,8 +28,8 @@ const PhoneFriendIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ use
 );
 
 const SwitchQuestionIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ used, onClick }) => (
-    <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-lg border-2 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <button onClick={onClick} disabled={used} className={`relative font-bold text-white text-lg border-2 rounded-full w-20 h-20 md:w-28 md:h-28 flex items-center justify-center transition-all duration-300 ${used ? 'bg-red-800 border-red-500 opacity-50 cursor-not-allowed' : 'bg-blue-900 border-blue-500 hover:bg-blue-700 hover:border-blue-300'}`}>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
       </svg>
       {used && <div className="absolute inset-0 flex items-center justify-center text-red-400 text-5xl font-black">X</div>}
@@ -38,7 +38,7 @@ const SwitchQuestionIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ 
 
 
 const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
-  <div className="w-full lg:w-64 xl:w-80 bg-black bg-opacity-50 p-2 md:p-4 rounded-lg border-2 border-blue-900">
+  <div className="w-full lg:w-64 xl:w-80 bg-black bg-opacity-50 p-2 rounded-lg border-2 border-blue-900">
     <ul className="flex flex-col-reverse text-center">
       {PRIZE_AMOUNTS.map((amount, index) => {
         const isCurrent = index === currentLevel;
@@ -60,7 +60,7 @@ const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
         // The current level is the most prominent
         if (isCurrent) {
             // Responsive padding and font-size for the current level
-            levelClass = "bg-yellow-600 text-white font-bold scale-110 text-lg md:text-xl lg:text-2xl p-2 md:p-3 lg:p-4";
+            levelClass = "bg-yellow-600 text-white font-bold scale-105 text-sm md:text-base p-1 md:p-2";
         }
 
 
@@ -68,7 +68,7 @@ const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
           <li
             key={amount}
             // Responsive base classes for padding, margin, and font-size to ensure it fits on smaller screens
-            className={`px-2 py-1 my-0.5 md:py-1.5 md:my-1 rounded-md transition-all duration-300 text-sm md:text-base ${levelClass}`}
+            className={`px-2 py-0.5 my-0.5 rounded-md transition-all duration-300 text-xs sm:text-sm ${levelClass}`}
           >
             <span className="mr-2 text-yellow-400">{PRIZE_AMOUNTS.length - index}</span> {amount}
           </li>
@@ -79,7 +79,7 @@ const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
 );
 
 const AnswerButton: React.FC<{ answer: string; state: AnswerState; isSuggested: boolean; onClick: () => void }> = ({ answer, state, isSuggested, onClick }) => {
-    const baseClasses = "w-full text-left p-4 rounded-lg border-2 text-lg md:text-xl transition-all duration-500 transform font-semibold flex items-center";
+    const baseClasses = "w-full text-left p-3 rounded-lg border-2 text-base md:text-lg transition-all duration-500 transform font-semibold flex items-center";
     const stateClasses = {
       [AnswerState.Default]: "bg-blue-900 border-blue-500 hover:bg-blue-700 text-white cursor-pointer",
       [AnswerState.Selected]: "bg-yellow-600 border-yellow-400 text-white gentle-pulse-animation cursor-wait",
@@ -468,8 +468,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0c0a24] to-[#04040c] text-white flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-7xl mx-auto relative">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0c0a24] to-[#04040c] text-white flex flex-col p-2 sm:p-4">
+      <div className="w-full max-w-7xl mx-auto relative flex-grow flex flex-col justify-center">
         {gameStatus === GameStatus.Welcome && (
           <>
             <div className="text-center">
@@ -560,20 +560,20 @@ export default function App() {
               );
           }
           return (
-            <div className="w-full" onClick={handleScreenClick}>
-              <div className="w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+            <div className="w-full h-full flex items-center" onClick={handleScreenClick}>
+              <div className="w-full flex flex-col lg:flex-row gap-4 items-center lg:items-start justify-center">
                 <div 
-                    className="w-full lg:flex-grow flex flex-col items-center gap-8"
+                    className="w-full lg:flex-grow flex flex-col items-center justify-center gap-y-2 md:gap-y-4"
                     style={{
                         opacity: questionOpacity,
                         transform: questionTransform,
                         transition: 'opacity 0.4s ease-in-out, transform 0.4s ease-in-out',
                     }}
                 >
-                    <div className="w-full bg-black bg-opacity-50 p-6 rounded-lg border-2 border-blue-900 text-center text-2xl md:text-3xl font-semibold text-white">
+                    <div className="w-full bg-black bg-opacity-50 p-4 md:p-5 rounded-lg border-2 border-blue-900 text-center text-xl md:text-2xl font-semibold text-white">
                         {currentQuestion.question}
                     </div>
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                         {shuffledAnswers.map((answer, index) => (
                             <AnswerButton 
                                 key={answer} 
@@ -584,8 +584,8 @@ export default function App() {
                             />
                         ))}
                     </div>
-                    <div className="w-full flex flex-col items-center gap-4">
-                      <div className="flex flex-wrap justify-center gap-4 items-center">
+                    <div className="w-full flex flex-col items-center mt-2">
+                      <div className="flex flex-wrap justify-center gap-2 md:gap-4 items-center">
                           {isTimerEnabled && timeLeft !== null && <Timer secondsLeft={timeLeft} isActive={gameStatus === GameStatus.Playing} />}
                           <FiftyFiftyIcon used={fiftyFiftyUsed} onClick={useFiftyFifty}/>
                           <div className="relative">
@@ -606,10 +606,10 @@ export default function App() {
                             <button
                                 onClick={handleDevModeAdvance}
                                 disabled={isAnswerProcessing.current}
-                                className="font-bold text-white text-lg border-2 rounded-full w-24 h-24 md:w-32 md:h-32 flex items-center justify-center transition-all duration-300 bg-purple-900 border-purple-500 hover:bg-purple-700 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="font-bold text-white text-lg border-2 rounded-full w-20 h-20 md:w-28 md:h-28 flex items-center justify-center transition-all duration-300 bg-purple-900 border-purple-500 hover:bg-purple-700 hover:border-purple-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Developer Mode: Seleziona la risposta corretta"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 md:h-12 md:w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </button>
@@ -617,7 +617,7 @@ export default function App() {
                       </div>
                     </div>
                 </div>
-                <div className="w-full md:w-auto flex-shrink-0">
+                <div className="w-full lg:w-auto flex-shrink-0">
                     <PrizeLadder currentLevel={prizeLevel} />
                 </div>
               </div>
