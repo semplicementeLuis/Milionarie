@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GameStatus, QuizQuestion, AnswerState } from './types';
 import { PRIZE_AMOUNTS, SAFE_LEVELS, TIMER_DURATIONS } from './constants';
@@ -37,7 +38,7 @@ const SwitchQuestionIcon: React.FC<{ used: boolean; onClick: () => void }> = ({ 
 
 
 const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
-  <div className="w-full lg:w-64 xl:w-80 bg-black bg-opacity-50 p-4 rounded-lg border-2 border-blue-900">
+  <div className="w-full lg:w-64 xl:w-80 bg-black bg-opacity-50 p-2 md:p-4 rounded-lg border-2 border-blue-900">
     <ul className="flex flex-col-reverse text-center">
       {PRIZE_AMOUNTS.map((amount, index) => {
         const isCurrent = index === currentLevel;
@@ -58,14 +59,16 @@ const PrizeLadder: React.FC<{ currentLevel: number }> = ({ currentLevel }) => (
         }
         // The current level is the most prominent
         if (isCurrent) {
-            levelClass = "bg-yellow-600 text-white font-bold scale-110 text-2xl p-4";
+            // Responsive padding and font-size for the current level
+            levelClass = "bg-yellow-600 text-white font-bold scale-110 text-lg md:text-xl lg:text-2xl p-2 md:p-3 lg:p-4";
         }
 
 
         return (
           <li
             key={amount}
-            className={`p-2 my-1 rounded-md transition-all duration-300 ${levelClass}`}
+            // Responsive base classes for padding, margin, and font-size to ensure it fits on smaller screens
+            className={`px-2 py-1 my-0.5 md:py-1.5 md:my-1 rounded-md transition-all duration-300 text-sm md:text-base ${levelClass}`}
           >
             <span className="mr-2 text-yellow-400">{PRIZE_AMOUNTS.length - index}</span> {amount}
           </li>
